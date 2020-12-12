@@ -12,6 +12,7 @@ window = pygame.display.set_mode((anchura, altura))
 
 tuberias = pygame.sprite.Group()
 imageListUp = ["tuberiaUp100.png", "tuberiaUp150.png", "tuberiaUp200.png", "tuberiaUp300.png"]    
+imageListDown = ["tuberiaDown100.png", "tuberiaDown150.png", "tuberiaDown200.png", "tuberiaDown300.png"]    
 
 outDisplay1 = False
 outDisplay2 = False
@@ -22,9 +23,8 @@ textVidas = None
 xFlapy, yFlapy = 100, (altura/2)
 xInicial, yInicial = xFlapy, yFlapy
 
-xTuberia = random.randrange(100, anchura)
-xTuberia2 = random.randrange(100, anchura)
-yTuberia2 = 0 
+xTuberiaUp = random.randrange(100, anchura)
+xTuberiaDown = random.randrange(100, anchura)
 xVidas = anchura - 200
 yVidas = 50
 
@@ -32,33 +32,45 @@ velocity = 1
 
 vidas = 3
 
-def tuberia_incial():
+def tuberiaUp_inicial():
     global tuberiaUp
-    global yTuberia
-    global tuberiaWidth
-    global tuberiaHeight
+    global yTuberiaUp
+    global tuberiaUpWidth
+    global tuberiaUpHeight
 
     tuberia = random.choice(imageListUp)
-    tuberiaUp = pygame.image.load(tuberia)
-    tuberiaWidth = tuberiaUp.get_width()
-    tuberiaHeight = tuberiaUp.get_height()
-    yTuberia = altura - tuberiaHeight 
+    tuberiaUp = pygame.image.load("tuberiaUp/"+ tuberia)
+    tuberiaUpWidth = tuberiaUp.get_width()
+    tuberiaUpHeight = tuberiaUp.get_height()
+    yTuberiaUp = altura - tuberiaUpHeight 
 
-def load_obstaculos():
+def tuberiaDown_inicial():
+    global tuberiaDown
+    global yTuberiaDown
+    global tuberiaDownWidth
+    global tuberiaDownHeight
+
+    tuberia = random.choice(imageListDown) 
+    tuberiaDown = pygame.image.load("tuberiaDown/" + tuberia)
+    tuberiaDownWidth = tuberiaDown.get_width()
+    tuberiaDownHeight = tuberiaDown.get_height()
+    yTuberiaDown = 0
+
+def load_sprites():
     global tuberiaDownSprite
     global tuberiaUpSprite
+
     tuberiaUpSprite = pygame.sprite.Sprite()
     tuberiaUpSprite.image = tuberiaUp
     tuberiaUpSprite.rect = tuberiaUp.get_rect()
-    tuberiaUpSprite.rect.x = xTuberia 
-    tuberiaUpSprite.rect.y = yTuberia
+    tuberiaUpSprite.rect.x = xTuberiaUp 
+    tuberiaUpSprite.rect.y = yTuberiaUp
 
-    tuberiaDown = pygame.image.load("tuberiaDown.png")
     tuberiaDownSprite = pygame.sprite.Sprite()
     tuberiaDownSprite.image = tuberiaDown
     tuberiaDownSprite.rect = tuberiaDown.get_rect()
-    tuberiaDownSprite.rect.x = xTuberia2
-    tuberiaDownSprite.rect.y = yTuberia2
+    tuberiaDownSprite.rect.x = xTuberiaDown
+    tuberiaDownSprite.rect.y = yTuberiaDown
 
     tuberias.add(tuberiaUpSprite)
     tuberias.add(tuberiaDownSprite)
@@ -98,11 +110,28 @@ def update_x():
         tuberiaDownSprite.rect.x = anchura  
         outDisplay1 = True
     elif tuberiaUpSprite.rect.x < 0:
-        tuberiaUpSprite.rect.x = anchura  
         outDisplay2 = True
 
     else:
         outDisplay1, outDisplay2 = False, False
+
+def update_y():
+    global tuberiaUpSprite
+    if outDisplay2:
+
+        tuberia = random.choice(imageListUp)
+        tuberiaNew = pygame.image.load("tuberiaUp/"+ tuberia)
+        tuberiaNewHeight = tuberiaNew.get_height()
+
+        tuberiaNewSprite = pygame.sprite.Sprite()
+        tuberiaNewSprite.image = tuberiaNew
+        tuberiaNewSprite.rect = tuberiaNew.get_rect()
+        tuberiaNewSprite.rect.x = anchura 
+        tuberiaNewSprite.rect.y = altura - tuberiaNewHeight 
+
+        tuberias.add(tuberiaNewSprite)
+
+        tuberiaNewSprite.rect.x -= 4
 
 
 def move_flapyBird():
@@ -149,9 +178,10 @@ def endGame():
 
     return False
 
-tuberia_incial()
+tuberiaDown_inicial()
+tuberiaUp_inicial()
 load_flapyBird()
-load_obstaculos()
+load_sprites()
 while not endGame():
     window.fill((0, 255, 255))
 
@@ -161,6 +191,6 @@ while not endGame():
     load_font()
     dibuja()
     update_x()
-    #updateY()
+    update_y()
     pygame.display.flip()
 

@@ -103,8 +103,8 @@ def dibuja():
 
 def update_x():
     global outDisplay1, outDisplay2
-    tuberiaDownSprite.rect.x -= 4
-    tuberiaUpSprite.rect.x -= 4
+    tuberiaDownSprite.rect.x -= 2
+    tuberiaUpSprite.rect.x -= 2
 
     if tuberiaDownSprite.rect.x < 0:
         tuberiaDownSprite.rect.x = anchura  
@@ -114,24 +114,6 @@ def update_x():
 
     else:
         outDisplay1, outDisplay2 = False, False
-
-def update_y():
-    global tuberiaUpSprite
-    if outDisplay2:
-
-        tuberia = random.choice(imageListUp)
-        tuberiaNew = pygame.image.load("tuberiaUp/"+ tuberia)
-        tuberiaNewHeight = tuberiaNew.get_height()
-
-        tuberiaNewSprite = pygame.sprite.Sprite()
-        tuberiaNewSprite.image = tuberiaNew
-        tuberiaNewSprite.rect = tuberiaNew.get_rect()
-        tuberiaNewSprite.rect.x = anchura 
-        tuberiaNewSprite.rect.y = altura - tuberiaNewHeight 
-
-        tuberias.add(tuberiaNewSprite)
-
-        tuberiaNewSprite.rect.x -= 4
 
 
 def move_flapyBird():
@@ -191,6 +173,6 @@ while not endGame():
     load_font()
     dibuja()
     update_x()
-    update_y()
+    #update_y()
     pygame.display.flip()
 

@@ -1,7 +1,6 @@
 import pygame
 import random
 
-
 pygame.init()
 pygame.font.init()
 
@@ -82,7 +81,6 @@ class creaTuberia:
                 self.velocity = 2
             self.count = 0
 
-
         #print (self.count, self.tuberiaDownSprite.rect.x, self.tuberiaUpSprite.rect.x)
 
 class flapyBird:
@@ -152,7 +150,6 @@ class flapyBird:
             self.xFlapy, self.yFlapy = self.xInicial, self.yInicial
             vidas.vidas -= 1
 
-
 class endGame:
     def __init__(self):
         self.xVidas, self.yVidas = anchura - 200, 50
@@ -192,6 +189,7 @@ class menu:
         self.bg = pygame.image.load("menuBg.png")
         self.uso = pygame.image.load("uso.png")
         self.font = pygame.font.SysFont("fugazone", 80)
+        self.titulo = self.font.render("Flapy Bird", False, (0, 0 , 0))
         self.jugar = self.font.render("Jugar", False, (0, 0, 0))
         self.salir = self.font.render("Salir", False, (0, 0, 0))
         self.birdSprite = [pygame.image.load('menuSprites/1.png'), pygame.image.load('menuSprites/1.png'), pygame.image.load('menuSprites/1.png'), pygame.image.load('menuSprites/1.png'), pygame.image.load('menuSprites/1.png'),
@@ -203,9 +201,9 @@ class menu:
               pygame.image.load('menuSprites/7.png'), pygame.image.load('menuSprites/7.png'), pygame.image.load('menuSprites/7.png'), pygame.image.load('menuSprites/7.png'), pygame.image.load('menuSprites/7.png'),
               pygame.image.load('menuSprites/8.png'), pygame.image.load('menuSprites/8.png'), pygame.image.load('menuSprites/8.png'), pygame.image.load('menuSprites/8.png'), pygame.image.load('menuSprites/8.png')]
         
-
         self.xFlapy, self.yFlapy = 300, 325
-        self.xJugar, self.yJugar = 600, 325
+        self.xTitulo, self.yTitulo = 400, 100
+        self.xJugar, self.yJugar = 600, 300 
         self.xSalir, self.ySalir = 600, 500 
 
         self.UP = True 
@@ -216,6 +214,7 @@ class menu:
     def dibuja(self):
         window.blit(self.bg, (0, 0))
         window.blit(self.uso, (50, altura - 100))
+        window.blit(self.titulo, (self.xTitulo, self.yTitulo))
         window.blit(self.jugar, (self.xJugar, self.yJugar))
         window.blit(self.salir, (self.xSalir, self.ySalir))
         window.blit(self.birdSprite[self.Count], (self.xFlapy, self.yFlapy))

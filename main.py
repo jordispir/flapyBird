@@ -1,178 +1,278 @@
 import pygame
 import random
 
+
 pygame.init()
 pygame.font.init()
 
 fps = pygame.time.Clock()
-fps.tick(60)
+fps.tick(30)
 
-anchura, altura = 1800, 900 
+anchura, altura = 1200, 800 
 window = pygame.display.set_mode((anchura, altura))
 
 tuberias = pygame.sprite.Group()
-imageListUp = ["tuberiaUp100.png", "tuberiaUp150.png", "tuberiaUp200.png", "tuberiaUp300.png"]    
-imageListDown = ["tuberiaDown100.png", "tuberiaDown150.png", "tuberiaDown200.png", "tuberiaDown300.png"]    
 
-outDisplay1 = False
-outDisplay2 = False
-flapyBird = None
-font = None
-textVidas = None
+global out
+global activaMenu
+out = False
+activaMenu = False
 
-xFlapy, yFlapy = 100, (altura/2)
-xInicial, yInicial = xFlapy, yFlapy
+class creaTuberia:
+    def __init__(self):
+        
+        self.xTuberiaUp = anchura - 100
+        self.yTuberiaUp = random.randrange(altura/2, altura)
+        tuberia = pygame.image.load("tuberia.png")
+        self.tuberiaUpSprite = pygame.sprite.Sprite()
+        self.tuberiaUpSprite.image = tuberia
+        self.tuberiaUpSprite.rect = tuberia.get_rect()
+        self.tuberiaUpSprite.rect.x = self.xTuberiaUp 
+        self.tuberiaUpSprite.rect.y = self.yTuberiaUp
 
-xTuberiaUp = random.randrange(100, anchura)
-xTuberiaDown = random.randrange(100, anchura)
-xVidas = anchura - 200
-yVidas = 50
+        self.tuberiaHeight = tuberia.get_height()
 
-velocity = 1
+        self.xTuberiaDown = anchura - 100
+        self.yTuberiaDown = random.randrange(-500, 0)
+        tuberiaDown = pygame.transform.rotate(tuberia, 180)
+        self.tuberiaDownSprite = pygame.sprite.Sprite()
+        self.tuberiaDownSprite.image = tuberiaDown
+        self.tuberiaDownSprite.rect = tuberiaDown.get_rect()
+        self.tuberiaDownSprite.rect.x = self.xTuberiaDown 
+        self.tuberiaDownSprite.rect.y = self.yTuberiaDown
 
-vidas = 3
+        tuberias.add(self.tuberiaDownSprite)
+        tuberias.add(self.tuberiaUpSprite)
 
-def tuberiaUp_inicial():
-    global tuberiaUp
-    global yTuberiaUp
-    global tuberiaUpWidth
-    global tuberiaUpHeight
+        self.count = 0
+        self.velocity = 2
 
-    tuberia = random.choice(imageListUp)
-    tuberiaUp = pygame.image.load("tuberiaUp/"+ tuberia)
-    tuberiaUpWidth = tuberiaUp.get_width()
-    tuberiaUpHeight = tuberiaUp.get_height()
-    yTuberiaUp = altura - tuberiaUpHeight 
+        self.diferencia = 100
 
-def tuberiaDown_inicial():
-    global tuberiaDown
-    global yTuberiaDown
-    global tuberiaDownWidth
-    global tuberiaDownHeight
+    def dibuja(self):
+        tuberias.draw(window)
 
-    tuberia = random.choice(imageListDown) 
-    tuberiaDown = pygame.image.load("tuberiaDown/" + tuberia)
-    tuberiaDownWidth = tuberiaDown.get_width()
-    tuberiaDownHeight = tuberiaDown.get_height()
-    yTuberiaDown = 0
+    def update(self):
+        self.tuberiaDownSprite.rect.x -= self.velocity
+        self.tuberiaUpSprite.rect.x -= self.velocity
 
-def load_sprites():
-    global tuberiaDownSprite
-    global tuberiaUpSprite
+        if self.tuberiaDownSprite.rect.x < 0:
+            self.tuberiaDownSprite.rect.x = anchura
+            pos1 = random.randrange(-self.tuberiaHeight, (altura/2) - self.tuberiaHeight) #TODO optimizar 
+            self.tuberiaDownSprite.rect.y = pos1
 
-    tuberiaUpSprite = pygame.sprite.Sprite()
-    tuberiaUpSprite.image = tuberiaUp
-    tuberiaUpSprite.rect = tuberiaUp.get_rect()
-    tuberiaUpSprite.rect.x = xTuberiaUp 
-    tuberiaUpSprite.rect.y = yTuberiaUp
+            self.count += 1
 
-    tuberiaDownSprite = pygame.sprite.Sprite()
-    tuberiaDownSprite.image = tuberiaDown
-    tuberiaDownSprite.rect = tuberiaDown.get_rect()
-    tuberiaDownSprite.rect.x = xTuberiaDown
-    tuberiaDownSprite.rect.y = yTuberiaDown
+        if self.tuberiaUpSprite.rect.x < 0:
+            self.tuberiaUpSprite.rect.x = anchura
+            pos2 = random.randrange(altura/2, altura - 100) 
 
-    tuberias.add(tuberiaUpSprite)
-    tuberias.add(tuberiaDownSprite)
+            self.diferencia = (pos2) - (pos1 + self.tuberiaHeight)
 
+            print (self.diferencia)
 
-def load_flapyBird():
-    global flapyBird
-    global flapyBirdImageHeight
-    global flapyBirdImageWidth
-    flapyBirdImage = pygame.image.load("flapyBird.png")
-    flapyBirdImageHeight = flapyBirdImage.get_height()
-    flapyBirdImageWidth= flapyBirdImage.get_width()
-    flapyBird = pygame.sprite.Sprite()
-    flapyBird.image = flapyBirdImage
-    flapyBird.rect = flapyBirdImage.get_rect()
-    flapyBird.rect.x = xFlapy
-    flapyBird.rect.y = yFlapy
+            if self.diferencia < 100:
+                pos2 += 100
 
-def load_font():
-    global font
-    global textVidas
-    font = pygame.font.SysFont("comicsans", 50)
-    textVidas = font.render("vidas: "+ str(vidas), False, (0, 0, 0))
+            self.tuberiaUpSprite.rect.y = pos2 
+
+        if self.count == 5:
+            self.velocity += 2
+            if self.velocity == 10:
+                self.velocity = 2
+            self.count = 0
 
 
-def dibuja():
-    tuberias.draw(window)
-    window.blit(textVidas, (xVidas, yVidas))
-    window.blit(flapyBird.image, (flapyBird.rect.x, flapyBird.rect.y))
+        #print (self.count, self.tuberiaDownSprite.rect.x, self.tuberiaUpSprite.rect.x)
 
-def update_x():
-    global outDisplay1, outDisplay2
-    tuberiaDownSprite.rect.x -= 2
-    tuberiaUpSprite.rect.x -= 2
+class flapyBird:
+    def __init__(self):
+        self.xFlapy, self.yFlapy = 100, (altura/2)
+        self.xInicial, self.yInicial = self.xFlapy, self.yFlapy
+        flapyBirdImage = pygame.image.load("left/1.png")
+        self.birdSpriteLeft = [pygame.image.load('left/1.png'), pygame.image.load('left/1.png'), pygame.image.load('left/1.png'), pygame.image.load('left/1.png'), pygame.image.load('left/1.png'),
+              pygame.image.load('left/2.png'),pygame.image.load('left/2.png'), pygame.image.load('left/2.png'), pygame.image.load('left/2.png'), pygame.image.load('left/2.png'),
+              pygame.image.load('left/3.png'), pygame.image.load('left/3.png'), pygame.image.load('left/3.png'), pygame.image.load('left/3.png'), pygame.image.load('left/3.png'),
+              pygame.image.load('left/4.png'), pygame.image.load('left/4.png'), pygame.image.load('left/4.png'), pygame.image.load('left/4.png'), pygame.image.load('left/4.png'),
+              pygame.image.load('left/5.png'), pygame.image.load('left/5.png'), pygame.image.load('left/5.png'), pygame.image.load('left/5.png'), pygame.image.load('left/5.png'),
+              pygame.image.load('left/6.png'), pygame.image.load('left/6.png'), pygame.image.load('left/6.png'), pygame.image.load('left/6.png'), pygame.image.load('left/6.png'),
+              pygame.image.load('left/7.png'), pygame.image.load('left/7.png'), pygame.image.load('left/7.png'), pygame.image.load('left/7.png'), pygame.image.load('left/7.png'),
+              pygame.image.load('left/8.png'), pygame.image.load('left/8.png'), pygame.image.load('left/8.png'), pygame.image.load('left/8.png'), pygame.image.load('left/8.png')]
+        self.birdSpriteRight = [pygame.image.load('right/1.png'), pygame.image.load('right/1.png'), pygame.image.load('right/1.png'), pygame.image.load('right/1.png'), pygame.image.load('right/1.png'),
+              pygame.image.load('right/2.png'),pygame.image.load('right/2.png'), pygame.image.load('right/2.png'), pygame.image.load('right/2.png'), pygame.image.load('right/2.png'),
+              pygame.image.load('right/3.png'), pygame.image.load('right/3.png'), pygame.image.load('right/3.png'), pygame.image.load('right/3.png'), pygame.image.load('right/3.png'),
+              pygame.image.load('right/4.png'), pygame.image.load('right/4.png'), pygame.image.load('right/4.png'), pygame.image.load('right/4.png'), pygame.image.load('right/4.png'),
+              pygame.image.load('right/5.png'), pygame.image.load('right/5.png'), pygame.image.load('right/5.png'), pygame.image.load('right/5.png'), pygame.image.load('right/5.png'),
+              pygame.image.load('right/6.png'), pygame.image.load('right/6.png'), pygame.image.load('right/6.png'), pygame.image.load('right/6.png'), pygame.image.load('right/6.png'),
+              pygame.image.load('right/7.png'), pygame.image.load('right/7.png'), pygame.image.load('right/7.png'), pygame.image.load('right/7.png'), pygame.image.load('right/7.png'),
+              pygame.image.load('right/8.png'), pygame.image.load('right/8.png'), pygame.image.load('right/8.png'), pygame.image.load('right/8.png'), pygame.image.load('right/8.png')]
+        self.flapyBirdImageHeight = flapyBirdImage.get_height()
+        self.flapyBirdImageWidth= flapyBirdImage.get_width()
+        self.flapyBird = pygame.sprite.Sprite()
+        self.flapyBird.image = self.birdSpriteRight
+        self.flapyBird.rect = flapyBirdImage.get_rect()
+        self.flapyBird.rect.x = self.xFlapy
+        self.flapyBird.rect.y = self.yFlapy
 
-    if tuberiaDownSprite.rect.x < 0:
-        tuberiaDownSprite.rect.x = anchura  
-        outDisplay1 = True
-    elif tuberiaUpSprite.rect.x < 0:
-        outDisplay2 = True
+        self.jump = False
+        self.velocity = 1
+        self.count = 0
 
-    else:
-        outDisplay1, outDisplay2 = False, False
+    def dibuja(self):
+        window.blit(self.birdSpriteRight[self.count], (self.xFlapy, self.yFlapy))
+        self.count += 1
 
+        if self.count == 40:
+            self.count = 0
 
-def move_flapyBird():
-    global xFlapy, yFlapy
+    def move_flapyBird(self):
+        key = pygame.key.get_pressed()
 
-    key = pygame.key.get_pressed()
+        self.yFlapy += self.velocity 
 
-    xFlapy += velocity
-    yFlapy += velocity 
+        if key[pygame.K_SPACE]:
+            self.yFlapy -= (self.velocity/2 * 5)
 
-    if key[pygame.K_SPACE]:
-        yFlapy -= (velocity/2 * 10)
+        self.flapyBird.rect.y = self.yFlapy
 
-    flapyBird.rect.x = xFlapy
-    flapyBird.rect.y = yFlapy
+    def colision(self, vidas):
+        if (pygame.sprite.spritecollideany(self.flapyBird, tuberias)):
+            self.xFlapy, self.yFlapy = self.xInicial, self.yInicial #rect.x para colisiones con otros menuSprites.
+            vidas.vidas -= 1
 
-def colision():
-    global vidas
-    global xFlapy, yFlapy
+        elif self.yFlapy > altura - self.flapyBirdImageHeight:
+            self.xFlapy, self.yFlapy = self.xInicial, self.yInicial
+            vidas.vidas -= 1
 
-    if (pygame.sprite.spritecollideany(flapyBird, tuberias)):
-        vidas -= 1
+        elif self.yFlapy < 0: 
+            self.xFlapy, self.yFlapy = self.xInicial, self.yInicial
+            vidas.vidas -= 1
 
-        xFlapy, yFlapy = xInicial, yInicial
-
-    elif yFlapy == altura - flapyBirdImageHeight:
-        vidas -= 1
-        xFlapy, yFlapy = xInicial, yInicial
-    elif yFlapy < 0: 
-        vidas -= 1
-        xFlapy, yFlapy = xInicial, yInicial
-    elif xFlapy == anchura - flapyBirdImageWidth:
-        vidas -= 1
-        xFlapy, yFlapy = xInicial, yInicial
+        elif self.xFlapy > anchura - self.flapyBirdImageWidth:
+            self.xFlapy, self.yFlapy = self.xInicial, self.yInicial
+            vidas.vidas -= 1
 
 
+class endGame:
+    def __init__(self):
+        self.xVidas, self.yVidas = anchura - 200, 50
+        self.vidas = 3
+        self.font = pygame.font.SysFont("comicsans", 50)
+        self.textVidas = self.font.render("vidas: "+ str(self.vidas), False, (0, 0, 0))
+    
+    
+    def update(self):
+        self.textVidas = self.font.render("vidas: "+ str(self.vidas), False, (0, 0, 0))
 
-def endGame():
-    events = pygame.event.get()
-    for event in events:
-        if event.type == pygame.QUIT:
+    def dibuja(self):
+        window.blit(self.textVidas, (self.xVidas, self.yVidas))
+
+    def out(self):
+        global activaMenu
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.QUIT:
+                return True
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    activaMenu = True
+
+        if self.vidas == 0:
+            pass #Condición correcta.
+        
+        if out:
             return True
 
+        return False
 
-    return False
+class menu:
+    def __init__(self):
+        self.Count = 0
+        self.bg = pygame.image.load("menuBg.png")
+        self.uso = pygame.image.load("uso.png")
+        self.font = pygame.font.SysFont("fugazone", 80)
+        self.jugar = self.font.render("Jugar", False, (0, 0, 0))
+        self.salir = self.font.render("Salir", False, (0, 0, 0))
+        self.birdSprite = [pygame.image.load('menuSprites/1.png'), pygame.image.load('menuSprites/1.png'), pygame.image.load('menuSprites/1.png'), pygame.image.load('menuSprites/1.png'), pygame.image.load('menuSprites/1.png'),
+              pygame.image.load('menuSprites/2.png'),pygame.image.load('menuSprites/2.png'), pygame.image.load('menuSprites/2.png'), pygame.image.load('menuSprites/2.png'), pygame.image.load('menuSprites/2.png'),
+              pygame.image.load('menuSprites/3.png'), pygame.image.load('menuSprites/3.png'), pygame.image.load('menuSprites/3.png'), pygame.image.load('menuSprites/3.png'), pygame.image.load('menuSprites/3.png'),
+              pygame.image.load('menuSprites/4.png'), pygame.image.load('menuSprites/4.png'), pygame.image.load('menuSprites/4.png'), pygame.image.load('menuSprites/4.png'), pygame.image.load('menuSprites/4.png'),
+              pygame.image.load('menuSprites/5.png'), pygame.image.load('menuSprites/5.png'), pygame.image.load('menuSprites/5.png'), pygame.image.load('menuSprites/5.png'), pygame.image.load('menuSprites/5.png'),
+              pygame.image.load('menuSprites/6.png'), pygame.image.load('menuSprites/6.png'), pygame.image.load('menuSprites/6.png'), pygame.image.load('menuSprites/6.png'), pygame.image.load('menuSprites/6.png'),
+              pygame.image.load('menuSprites/7.png'), pygame.image.load('menuSprites/7.png'), pygame.image.load('menuSprites/7.png'), pygame.image.load('menuSprites/7.png'), pygame.image.load('menuSprites/7.png'),
+              pygame.image.load('menuSprites/8.png'), pygame.image.load('menuSprites/8.png'), pygame.image.load('menuSprites/8.png'), pygame.image.load('menuSprites/8.png'), pygame.image.load('menuSprites/8.png')]
+        
 
-tuberiaDown_inicial()
-tuberiaUp_inicial()
-load_flapyBird()
-load_sprites()
-while not endGame():
+        self.xFlapy, self.yFlapy = 300, 325
+        self.xJugar, self.yJugar = 600, 325
+        self.xSalir, self.ySalir = 600, 500 
+
+        self.UP = True 
+        self.DOWN = False
+
+        self.play = False
+
+    def dibuja(self):
+        window.blit(self.bg, (0, 0))
+        window.blit(self.uso, (50, altura - 100))
+        window.blit(self.jugar, (self.xJugar, self.yJugar))
+        window.blit(self.salir, (self.xSalir, self.ySalir))
+        window.blit(self.birdSprite[self.Count], (self.xFlapy, self.yFlapy))
+
+        self.Count += 1
+
+        if self.Count == 40:
+            self.Count = 0
+    
+    def opcion(self):
+        global out
+        global activaMenu
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_DOWN:
+                    self.yFlapy = self.ySalir
+                    self.DOWN = True
+                    self.UP = False
+                
+                elif event.key == pygame.K_UP:
+                    self.yFlapy = self.yJugar
+                    self.UP = True
+                    self.DOWN = False
+
+                elif event.key == pygame.K_RETURN and self.DOWN:
+                    out = True
+                    #return?
+
+                elif event.key == pygame.K_RETURN and self.UP:
+                    self.play = True
+                    activaMenu = False
+
+                elif event.key == pygame.K_RETURN and self.yFlapy == self.yJugar:
+                    self.play = True
+                    activaMenu = False
+                    
+                    
+tuberia = creaTuberia()
+flapy = flapyBird()
+end = endGame()
+menu = menu()
+opcion = menu.opcion()
+
+while not end.out():
     window.fill((0, 255, 255))
 
-    move_flapyBird()
-    colision()
-
-    load_font()
-    dibuja()
-    update_x()
-    #update_y()
+    if menu.play and not(activaMenu):
+        tuberia.update()
+        tuberia.dibuja()
+        flapy.move_flapyBird()
+        flapy.dibuja()
+        flapy.colision(end) #parámetro end para utilizar sus atributos.
+        end.update()
+        end.dibuja()
+    else:
+        menu.dibuja()
+        menu.opcion()
+    
     pygame.display.flip()
 

@@ -142,15 +142,12 @@ class flapyBird:
 
         elif self.yFlapy > altura - self.flapyBirdImageHeight:
             self.xFlapy, self.yFlapy = self.xInicial, self.yInicial
-            vidas.vidas -= 1
 
         elif self.yFlapy < 0: 
             self.xFlapy, self.yFlapy = self.xInicial, self.yInicial
-            vidas.vidas -= 1
 
         elif self.xFlapy > anchura - self.flapyBirdImageWidth:
             self.xFlapy, self.yFlapy = self.xInicial, self.yInicial
-            vidas.vidas -= 1
 
 
 class endGame:

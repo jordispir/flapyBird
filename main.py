@@ -19,7 +19,6 @@ activaMenu = False
 
 class creaTuberia:
     def __init__(self):
-        
         self.xTuberiaUp = anchura - 100
         self.yTuberiaUp = random.randrange(altura/2, altura)
         tuberia = pygame.image.load("tuberia.png")
@@ -85,6 +84,7 @@ class creaTuberia:
 
 class flapyBird:
     def __init__(self):
+        self.font = pygame.font.SysFont("comicsans", 50)
         self.xFlapy, self.yFlapy = 100, (altura/2)
         self.xInicial, self.yInicial = self.xFlapy, self.yFlapy
         flapyBirdImage = pygame.image.load("left/1.png")
@@ -115,13 +115,21 @@ class flapyBird:
         self.jump = False
         self.velocity = 1
         self.count = 0
+        self.crossed = 0
+
+        self.xTuberias, self.yTuberias = anchura - 200, 100
+        self.textTuberias = self.font.render("tuberias: "+ str(self.crossed), False, (0, 0, 0))
 
     def dibuja(self):
         window.blit(self.birdSpriteRight[self.count], (self.xFlapy, self.yFlapy))
+        window.blit(self.textTuberias, (self.xTuberias, self.yTuberias))
         self.count += 1
 
         if self.count == 40:
             self.count = 0
+
+    def update(self):
+        self.textTuberias = self.font.render("tuberias: "+ str(self.crossed), False, (0, 0, 0))
 
     def move_flapyBird(self):
         key = pygame.key.get_pressed()
@@ -133,7 +141,7 @@ class flapyBird:
 
         self.flapyBird.rect.y = self.yFlapy
 
-    def colision(self, vidas):
+    def colision(self, vidas, tuberia):
         if (pygame.sprite.spritecollideany(self.flapyBird, tuberias)):
             self.xFlapy, self.yFlapy = self.xInicial, self.yInicial #rect.x para colisiones con otros menuSprites.
             vidas.vidas -= 1
@@ -147,12 +155,16 @@ class flapyBird:
         elif self.xFlapy > anchura - self.flapyBirdImageWidth:
             self.xFlapy, self.yFlapy = self.xInicial, self.yInicial
 
+        elif self.xFlapy == tuberia.tuberiaDownSprite.rect.x:
+            self.crossed += 1
+
 class endGame:
     def __init__(self):
         self.xVidas, self.yVidas = anchura - 200, 50
         self.vidas = 3
         self.font = pygame.font.SysFont("comicsans", 50)
         self.textVidas = self.font.render("vidas: "+ str(self.vidas), False, (0, 0, 0))
+        self.alive = True
     
     
     def update(self):
@@ -173,7 +185,7 @@ class endGame:
                     activaMenu = True
 
         if self.vidas == 0:
-            pass #Condición correcta.
+            self.alive = False
         
         if out:
             return True
@@ -186,7 +198,8 @@ class menu:
         self.bg = pygame.image.load("menuBg.png")
         self.uso = pygame.image.load("uso.png")
         self.font = pygame.font.SysFont("fugazone", 80)
-        self.titulo = self.font.render("Flapy Bird", False, (0, 0 , 0))
+        self.titulo = pygame.image.load("titulo.png")
+        self.widthTitulo = self.titulo.get_width()
         self.jugar = self.font.render("Jugar", False, (0, 0, 0))
         self.salir = self.font.render("Salir", False, (0, 0, 0))
         self.birdSprite = [pygame.image.load('menuSprites/1.png'), pygame.image.load('menuSprites/1.png'), pygame.image.load('menuSprites/1.png'), pygame.image.load('menuSprites/1.png'), pygame.image.load('menuSprites/1.png'),
@@ -197,11 +210,12 @@ class menu:
               pygame.image.load('menuSprites/6.png'), pygame.image.load('menuSprites/6.png'), pygame.image.load('menuSprites/6.png'), pygame.image.load('menuSprites/6.png'), pygame.image.load('menuSprites/6.png'),
               pygame.image.load('menuSprites/7.png'), pygame.image.load('menuSprites/7.png'), pygame.image.load('menuSprites/7.png'), pygame.image.load('menuSprites/7.png'), pygame.image.load('menuSprites/7.png'),
               pygame.image.load('menuSprites/8.png'), pygame.image.load('menuSprites/8.png'), pygame.image.load('menuSprites/8.png'), pygame.image.load('menuSprites/8.png'), pygame.image.load('menuSprites/8.png')]
-        
-        self.xFlapy, self.yFlapy = 300, 325
-        self.xTitulo, self.yTitulo = 400, 100
-        self.xJugar, self.yJugar = 600, 300 
-        self.xSalir, self.ySalir = 600, 500 
+        self.birdHeight = self.birdSprite[0].get_height()
+
+        self.xJugar, self.yJugar = anchura/2 + 100, 420 
+        self.xSalir, self.ySalir = anchura/2 + 100, self.yJugar + 155 
+        self.xFlapy, self.yFlapy = self.xJugar - 300, self.yJugar - 50
+        self.xTitulo, self.yTitulo = self.widthTitulo, 100
 
         self.UP = True 
         self.DOWN = False
@@ -210,8 +224,8 @@ class menu:
 
     def dibuja(self):
         window.blit(self.bg, (0, 0))
-        window.blit(self.uso, (50, altura - 100))
         window.blit(self.titulo, (self.xTitulo, self.yTitulo))
+        window.blit(self.uso, (50, altura - 100))
         window.blit(self.jugar, (self.xJugar, self.yJugar))
         window.blit(self.salir, (self.xSalir, self.ySalir))
         window.blit(self.birdSprite[self.Count], (self.xFlapy, self.yFlapy))
@@ -227,12 +241,12 @@ class menu:
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_DOWN:
-                    self.yFlapy = self.ySalir
+                    self.yFlapy = self.ySalir - 50
                     self.DOWN = True
                     self.UP = False
                 
                 elif event.key == pygame.K_UP:
-                    self.yFlapy = self.yJugar
+                    self.yFlapy = self.yJugar - 50
                     self.UP = True
                     self.DOWN = False
 
@@ -257,13 +271,13 @@ opcion = menu.opcion()
 
 while not end.out():
     window.fill((0, 255, 255))
-
     if menu.play and not(activaMenu):
         tuberia.update()
         tuberia.dibuja()
+        flapy.update()
         flapy.move_flapyBird()
         flapy.dibuja()
-        flapy.colision(end) #parámetro end para utilizar sus atributos.
+        flapy.colision(end, tuberia) #parámetro end para utilizar sus atributos.
         end.update()
         end.dibuja()
     else:
@@ -272,3 +286,8 @@ while not end.out():
     
     pygame.display.flip()
 
+
+
+
+    #TODO Tuberáis no detectan a mayor velocidad.
+    #TODO 0 vidas implica reiniciar la partida.
